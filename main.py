@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+import re
 
 DEBUG = True
 
@@ -12,11 +13,15 @@ def find_latest_traktor_version():
     documents_path = os.path.join(os.path.expanduser("~"), "Documents", "Native Instruments")
     traktor_versions = [folder for folder in os.listdir(documents_path) if folder.startswith("Traktor")]
 
-    if not traktor_versions:
+    version_pattern = re.compile(r"Traktor (\d+\.\d+\.\d+)")
+
+    valid_versions = [version_pattern.match(version).group(1) for version in traktor_versions if version_pattern.match(version)]
+
+    if not valid_versions:
         return None
 
-    latest_version = max(traktor_versions)
-    return os.path.join(documents_path, latest_version)
+    latest_version = max(valid_versions, key=lambda v: tuple(map(int, v.split('.'))))
+    return os.path.join(documents_path, f"Traktor {latest_version}")
 
 def parse_collection_nml(file_path):
     playlists = []
