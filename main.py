@@ -80,7 +80,7 @@ def main():
                     # Write playlist entries to the M3U file
                     playlist_file.write("#EXTM3U\n")
                     # Replace ':' with '\\' in the file paths for Windows compatibility
-                    entries = [entry.replace(':', '\\') for entry in playlist.entries]
+                    entries = [entry.replace('/:', '\\') for entry in playlist.entries]
                     playlist_file.write("\n".join(entries))
 
                 print(f"Playlist file '{playlist.name}.m3u' written to {output_dir}")
