@@ -11,6 +11,15 @@ class Playlist:
         self.entries = entries
 
 def collect_statistics_from_playlists(playlists):
+    """
+    Collects statistics from a list of playlists.
+
+    Args:
+        playlists (list): A list of playlists.
+
+    Returns:
+        None
+    """
     file_types = {}
     total_files = 0
     for playlist in playlists:
