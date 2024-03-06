@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<NML VERSION="20">
+	<HEAD COMPANY="www.native-instruments.com"
+	      PROGRAM="Traktor"/>
+	<COLLECTION ENTRIES="5">
+	</COLLECTION>
+	<SETS ENTRIES="0"/>
+	<PLAYLISTS>
+		<NODE TYPE="FOLDER"
+		      NAME="$ROOT">
+			<SUBNODES COUNT="8">
+				<NODE TYPE="SMARTLIST"
+				      NAME="Played in this session">
+					<SMARTLIST UUID="2c12319906384c268bc0fbaf371f2106">
+						<SEARCH_EXPRESSION VERSION="1"
+						                   QUERY="$PLAYED == TRUE"/>
+					</SMARTLIST>
+				</NODE>
+				<NODE TYPE="SMARTLIST"
+				      NAME="Recently added">
+					<SMARTLIST UUID="57adf61e96374c4a8d6cf9e5c3b8f42c">
+						<SEARCH_EXPRESSION VERSION="1"
+						                   QUERY="$IMPORTDATE >= MONTHS_AGO(1)"/>
+					</SMARTLIST>
+				</NODE>
+				<NODE TYPE="SMARTLIST"
+				      NAME="Top rated tracks">
+					<SMARTLIST UUID="c1361c4d82574447bfb81266a80b2fb3">
+						<SEARCH_EXPRESSION VERSION="1"
+						                   QUERY="$RATING == 5"/>
+					</SMARTLIST>
+				</NODE>
+				<NODE TYPE="PLAYLIST"
+				      NAME="_LOOPS">
+					<PLAYLIST ENTRIES="0"
+					          TYPE="LIST"
+					          UUID="f2a8175f7a464234a46c7182b0f18ceb"/>
+				</NODE>
+				<NODE TYPE="PLAYLIST"
+				      NAME="_RECORDINGS">
+					<PLAYLIST ENTRIES="0"
+					          TYPE="LIST"
+					          UUID="3d0c55aec8dd4da8a5ee1cf0df2ecb22"/>
+				</NODE>
+				<NODE TYPE="PLAYLIST"
+				      NAME="mag ich!">
+					<PLAYLIST ENTRIES="2"
+					          TYPE="LIST"
+					          UUID="44b8015e626045feaeb41f601be664f2">
+						<ENTRY>
+							<PRIMARYKEY TYPE="TRACK"
+							            KEY="C:/:Users/:erbro_5zux558/:Music/:Basis Change/:Basis Change - Aurora.flac"/>
+						</ENTRY>
+						<ENTRY>
+							<PRIMARYKEY TYPE="TRACK"
+							            KEY="C:/:Users/:erbro_5zux558/:Music/:Alex Virgo &amp; Benjamin Groove/:Alex Virgo &amp; Benjamin Groove - Night Train (Matrefakt Remix).flac"/>
+						</ENTRY>
+					</PLAYLIST>
+				</NODE>
+				<NODE TYPE="PLAYLIST"
+				      NAME="Preparation">
+					<PLAYLIST ENTRIES="0"
+					          TYPE="LIST"
+					          UUID="326f82cbeb0749f8932a6fe99fc70cfa"/>
+				</NODE>
+				<NODE TYPE="PLAYLIST"
+				      NAME="toll">
+					<PLAYLIST ENTRIES="2"
+					          TYPE="LIST"
+					          UUID="8399052426574b158020398b07910030">
+						<ENTRY>
+							<PRIMARYKEY TYPE="TRACK"
+							            KEY="C:/:Users/:erbro_5zux558/:Music/:DJ SWISHERMAN/:DJ SWISHERMAN - DRINK N SMOKE.flac"/>
+						</ENTRY>
+						<ENTRY>
+							<PRIMARYKEY TYPE="TRACK"
+							            KEY="C:/:Users/:erbro_5zux558/:Music/:Superliner/:Superliner - Fevered (Original Mix).aiff"/>
+						</ENTRY>
+					</PLAYLIST>
+				</NODE>
+			</SUBNODES>
+		</NODE>
+	</PLAYLISTS>
+	<INDEXING>
+		<SORTING_INFO PATH="$DYNAMICPLAYLISTSETS"/>
+		<SORTING_INFO PATH="$HASH"/>
+	</INDEXING>
+</NML>

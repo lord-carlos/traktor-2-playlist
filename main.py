@@ -3,11 +3,27 @@ import xml.etree.ElementTree as ET
 import re
 
 DEBUG = True
+STATISTIC = True
 
 class Playlist:
     def __init__(self, name, entries):
         self.name = name
         self.entries = entries
+
+def collect_statistics_from_playlists(playlists):
+    file_types = {}
+    total_files = 0
+    for playlist in playlists:
+        for entry in playlist.entries:
+            _, ext = os.path.splitext(entry)
+            file_types[ext] = file_types.get(ext, 0) + 1
+            total_files += 1
+
+    scale_factor = 50  # Adjust this to change the scale of the graph
+    for file_type, count in file_types.items():
+        proportion = count / total_files
+        graph_length = int(proportion * scale_factor)
+        print(f"{file_type}: {'#' * graph_length} ({count})")
 
 def find_latest_traktor_version():
     """
@@ -65,6 +81,26 @@ def parse_collection_nml(file_path):
 
     return playlists
 
+def write_playlist_files(playlists, output_dir, root_path):
+    for playlist in playlists:
+        if playlist.entries:
+            playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
+            with open(playlist_file_path, "w") as playlist_file:
+                    # Write playlist entries to the M3U file
+                playlist_file.write("#EXTM3U\n")
+
+                    # Replace ':' with '\\' in the file paths for Windows compatibility
+                entries = [entry.replace('/:', '\\') for entry in playlist.entries]
+                    # Remove the root path of every entry if root_path is provided
+                if root_path:
+                    entries = [entry.replace(root_path, '') for entry in entries]
+
+                playlist_file.write("\n".join(entries))
+
+            print(f"Playlist file '{playlist.name}.m3u' written to {output_dir}")
+        if STATISTIC:
+            collect_statistics_from_playlists([playlist])   
+
 def main():
     """
     The main function that orchestrates the process of finding the latest Traktor version,
@@ -105,24 +141,13 @@ def main():
             os.makedirs(output_dir)
 
         print(f"Please provide a root path for relative paths.")
-        root_path = input("(Optional) path to be stripped from each entry: ")        
+        root_path = input("(Optional) path to be stripped from each entry: ")
 
-        for playlist in playlists:
-            if playlist.entries:
-                playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
-                with open(playlist_file_path, "w") as playlist_file:
-                    # Write playlist entries to the M3U file
-                    playlist_file.write("#EXTM3U\n")
+        write_playlist_files(playlists, output_dir, root_path)
 
-                    # Replace ':' with '\\' in the file paths for Windows compatibility
-                    entries = [entry.replace('/:', '\\') for entry in playlist.entries]
-                    # Remove the root path of every entry if root_path is provided
-                    if root_path:
-                        entries = [entry.replace(root_path, '') for entry in entries]
-
-                    playlist_file.write("\n".join(entries))
-
-                print(f"Playlist file '{playlist.name}.m3u' written to {output_dir}")
+        # Overall statistic
+        if STATISTIC:
+            collect_statistics_from_playlists(playlists)  
 
 if __name__ == "__main__":
     main()
