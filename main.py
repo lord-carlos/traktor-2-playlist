@@ -10,6 +10,13 @@ class Playlist:
         self.entries = entries
 
 def find_latest_traktor_version():
+    """
+    Finds the latest version of Traktor installed on the system.
+
+    Returns:
+        str: The path to the latest version of Traktor.
+            None if Traktor folder is not found.
+    """
     documents_path = os.path.join(os.path.expanduser("~"), "Documents", "Native Instruments")
     traktor_versions = [folder for folder in os.listdir(documents_path) if folder.startswith("Traktor")]
 
@@ -24,6 +31,16 @@ def find_latest_traktor_version():
     return os.path.join(documents_path, f"Traktor {latest_version}")
 
 def parse_collection_nml(file_path):
+    """
+    Parses the collection.nml file and extracts playlists and their entries.
+
+    Args:
+        file_path (str): The path to the collection.nml file.
+
+    Returns:
+        list: A list of Playlist objects, each containing the name and entries of a playlist.
+            None if there was an error parsing the XML.
+    """
     playlists = []
 
     try:
@@ -49,6 +66,14 @@ def parse_collection_nml(file_path):
     return playlists
 
 def main():
+    """
+    The main function that orchestrates the process of finding the latest Traktor version,
+    parsing the collection.nml file, and writing playlist files.
+
+    Prints the playlists with at least 1 entry and prompts the user for the output directory.
+
+    Writes playlist files in the specified output directory.
+    """
     traktor_path = find_latest_traktor_version()
 
     if traktor_path is None:
