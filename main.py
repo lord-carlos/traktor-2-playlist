@@ -71,14 +71,16 @@ def main():
         for playlist in playlists:
             print(f"{playlist.name}: {len(playlist.entries)} entries")
 
-        output_dir = input("Enter the directory to write playlist files (press Enter for default): ")
+        output_dir_default = os.path.join(os.path.expanduser("~"), "Music")
+        output_dir = input("Enter the directory to write playlist files (press Enter for {}): ".format(output_dir_default))
         if not output_dir:
-            output_dir = os.path.join(os.path.expanduser("~"), "Music")
+            output_dir = output_dir_default
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        root_path = input("(Optional) Please provide a root path for relative paths: ")        
+        print(f"Please provide a root path for relative paths.")
+        root_path = input("(Optional) path to be stripped from each entry: ")        
 
         for playlist in playlists:
             if playlist.entries:
