@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 import re
+import file_statistics
 
 DEBUG = True
 STATISTIC = True
@@ -10,29 +11,6 @@ class Playlist:
         self.name = name
         self.entries = entries
 
-def collect_statistics_from_playlists(playlists):
-    """
-    Collects statistics from a list of playlists.
-
-    Args:
-        playlists (list): A list of playlists.
-
-    Returns:
-        None
-    """
-    file_types = {}
-    total_files = 0
-    for playlist in playlists:
-        for entry in playlist.entries:
-            _, ext = os.path.splitext(entry)
-            file_types[ext] = file_types.get(ext, 0) + 1
-            total_files += 1
-
-    scale_factor = 50  # Adjust this to change the scale of the graph
-    for file_type, count in file_types.items():
-        proportion = count / total_files
-        graph_length = int(proportion * scale_factor)
-        print(f"{file_type}: {'#' * graph_length} ({count})")
 
 def find_latest_traktor_version():
     """
@@ -108,7 +86,7 @@ def write_playlist_files(playlists, output_dir, root_path):
 
             print(f"Playlist file '{playlist.name}.m3u' written to {output_dir}")
         if STATISTIC:
-            collect_statistics_from_playlists([playlist])   
+            file_statistics.from_playlist([playlist])   
 
 def main():
     """
@@ -137,9 +115,10 @@ def main():
     playlists = parse_collection_nml(collection_nml_path)
 
     if playlists:
-        print("Playlists with at least 1 entry:")
-        for playlist in playlists:
-            print(f"{playlist.name}: {len(playlist.entries)} entries")
+        if DEBUG:
+            print("Playlists with at least 1 entry:")
+            for playlist in playlists:
+                print(f"{playlist.name}: {len(playlist.entries)} entries")
 
         output_dir_default = os.path.join(os.path.expanduser("~"), "Music")
         output_dir = input("Enter the directory to write playlist files (press Enter for {}): ".format(output_dir_default))
@@ -156,7 +135,7 @@ def main():
 
         # Overall statistic
         if STATISTIC:
-            collect_statistics_from_playlists(playlists)  
+            file_statistics.from_playlist(playlists)
 
 if __name__ == "__main__":
     main()
