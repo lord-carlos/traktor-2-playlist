@@ -2,9 +2,10 @@ import os
 import xml.etree.ElementTree as ET
 import re
 import file_statistics
+import argparse
 
-DEBUG = True
-STATISTIC = True
+DEBUG = False
+STATISTIC = False
 
 class Playlist:
     def __init__(self, name, entries):
@@ -68,7 +69,7 @@ def parse_collection_nml(file_path):
 
     return playlists
 
-def write_playlist_files(playlists, output_dir, root_path):
+def write_playlist_files(playlists, output_dir, root_path, path_prefix):
     for playlist in playlists:
         if playlist.entries:
             playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
@@ -82,7 +83,7 @@ def write_playlist_files(playlists, output_dir, root_path):
                 if root_path:
                     entries = [entry.replace(root_path, '') for entry in entries]
 
-                playlist_file.write("\n".join(entries))
+                playlist_file.write("\n".join([f"{path_prefix}{entry}" for entry in entries]))
 
             print(f"Playlist file '{playlist.name}.m3u' written to {output_dir}")
         if STATISTIC:
@@ -97,20 +98,46 @@ def main():
 
     Writes playlist files in the specified output directory.
     """
-    traktor_path = find_latest_traktor_version()
 
-    if traktor_path is None:
-        print("Error: Traktor folder not found.")
-        return
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-c', '--collection', type=str, help='Path to collection.nml If none is given we will try to find it automatically.')
+    parser.add_argument('-o', '--output_dir', type=str, default=os.path.join(os.path.expanduser("~"), "Music"), help='Directory to write playlist files')
+    parser.add_argument('-r', '--root_path', type=str, default='', help='Path to be stripped from each entry')
+    parser.add_argument('-p', '--path_prefix', type=str, default='', help='Path added in the beginning of the path. To be used with -r')
+    parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics mode')
 
-    if DEBUG:
-        print(f"Using Traktor folder: {traktor_path}")
+    args = parser.parse_args()
+  
+    collection_nml_path = ''
+    DEBUG = args.debug
+    STATISTIC = args.stats
+    
+    if args.collection:
+        collection_nml_path = args.collection
+        if not os.path.exists(collection_nml_path):
+            print(f"Error: collection.nml not found at {collection_nml_path}")
+            return
+    else:
+        traktor_path = find_latest_traktor_version()
 
-    collection_nml_path = os.path.join(traktor_path, "collection.nml")
+        if traktor_path is None:
+            print("Error: Traktor folder not found.")
+            return
+
+        if DEBUG:
+            print(f"Using Traktor folder: {traktor_path}")
+        
+        collection_nml_path = os.path.join(traktor_path, "collection.nml")
+
 
     if not os.path.exists(collection_nml_path):
         print(f"Error: collection.nml not found at {collection_nml_path}")
         return
+    
+    output_dir = args.output_dir
+    root_path = args.root_path
+    path_prefix = args.path_prefix
 
     playlists = parse_collection_nml(collection_nml_path)
 
@@ -120,18 +147,10 @@ def main():
             for playlist in playlists:
                 print(f"{playlist.name}: {len(playlist.entries)} entries")
 
-        output_dir_default = os.path.join(os.path.expanduser("~"), "Music")
-        output_dir = input("Enter the directory to write playlist files (press Enter for {}): ".format(output_dir_default))
-        if not output_dir:
-            output_dir = output_dir_default
-
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        print(f"Please provide a root path for relative paths.")
-        root_path = input("(Optional) path to be stripped from each entry: ")
-
-        write_playlist_files(playlists, output_dir, root_path)
+        write_playlist_files(playlists, output_dir, root_path, path_prefix)
 
         # Overall statistic
         if STATISTIC:

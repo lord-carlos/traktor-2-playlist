@@ -4,14 +4,34 @@ It can make the path to relative.
 
 Currently windows only. (Might actually work on mac, please test)
 
-* It tries to find your newest collection.nml
-* reads all the playlist with at least 1 track in it
-* Asks for a folder to put them in and write them all out into that dir.
+Work in progress
 
-### How to use
+## How to use
 
-..
+If you use it without any arguments, it will try to find the latest `collection.nml` and dump every playlist into `~/Music`
 
-### Todo:
+You can use it in a way to make the path relative. For example if all you files are in `C:\Users\erbro_5zux558\Music` but you want to share the music folder on another device. You can use the `--root_path` option to remove the `C:\Users...` part. If you at the same time save the playlists to the music folder they should still work.
 
-* instead of asking, there should be arguments like --root-path.
+But what if you want all the playlist into a `Playlists` folder in the music folder? Then you need to add the prefix `..\` with `-p` parameter.
+
+All of that could look something like this:
+
+```bash
+python ./traktor2playlist -o "C:\MyMusic\MyPlaylists" -r "C:\MyMusic\" -p "..\"
+```
+
+That will write all the playlist into the `MyPlaylits` folder and each line starts with `..\` without the `C:\..`
+
+## Available Options
+
+- `-c` or `--collection`: Specifies the path to the `collection.nml` file. If none is given, the script will try to find it automatically.
+
+- `-o` or `--output_dir`: Specifies the directory where the playlist files will be written. By default, this is the "Music" folder in the user's home directory.
+
+- `-r` or `--root_path`: Specifies the path to be stripped from each entry in the playlist files. (Optional)
+
+- `-p` or `--path_prefix`: Specifies the path to be added at the beginning of each entry in the playlist files. This is to be used with `-r`. For example `-r "..\"`
+
+- `-d` or `--debug`: Enables debug mode.
+
+- `-s` or `--stats`: Enables statistics mode.
