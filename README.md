@@ -10,7 +10,7 @@ Work in progress
 
 If you use it without any arguments, it will try to find the latest `collection.nml` and dump every playlist into `~/Music`
 
-You can use it in a way to make the path relative. For example if all you files are in `C:\Users\erbro_5zux558\Music` but you want to share the music folder on another device. You can use the `--root_path` option to remove the `C:\Users...` part. If you at the same time save the playlists to the music folder they should still work.
+You can use it in a way to make the path relative. For example if all you files are in `C:\Users\hans\Music` but you want to share the music folder on another device. You can use the `--root_path` option to remove the `C:\Users...` part. If you at the same time save the playlists to the music folder they should still work.
 
 But what if you want all the playlist into a `Playlists` folder in the music folder? Then you need to add the prefix `..\` with `-p` parameter.
 
