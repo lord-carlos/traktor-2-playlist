@@ -6,6 +6,8 @@ Currently windows only. (Might actually work on mac, please test)
 
 Work in progress
 
+![shitty logo](image.png)
+
 ## How to use
 
 If you use it without any arguments, it will try to find the latest `collection.nml` and dump every playlist into `~/Music`
