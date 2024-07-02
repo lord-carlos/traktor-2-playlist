@@ -72,13 +72,17 @@ def parse_collection_nml(file_path):
 def write_playlist_files(playlists, output_dir, root_path, path_prefix):
     for playlist in playlists:
         if playlist.entries:
+            # if playlist.name is '_LOOPS' or '_RECORDINGS' skip it
+            if playlist.name == '_LOOPS' or playlist.name == '_RECORDINGS':
+                continue
+
             playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
             with open(playlist_file_path, "w") as playlist_file:
                     # Write playlist entries to the M3U file
                 playlist_file.write("#EXTM3U\n")
 
                     # Replace ':' with '\\' in the file paths for Windows compatibility
-                entries = [entry.replace('/:', '\\') for entry in playlist.entries]
+                entries = [entry.replace('/:', os.sep) for entry in playlist.entries]
                     # Remove the root path of every entry if root_path is provided
                 if root_path:
                     entries = [entry.replace(root_path, '') for entry in entries]
