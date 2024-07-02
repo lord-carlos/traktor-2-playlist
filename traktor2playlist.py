@@ -77,7 +77,7 @@ def write_playlist_files(playlists, output_dir, root_path, path_prefix):
                 continue
 
             playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
-            with open(playlist_file_path, "w") as playlist_file:
+            with open(playlist_file_path, "w", encoding='utf-8') as playlist_file:
                     # Write playlist entries to the M3U file
                 playlist_file.write("#EXTM3U\n")
 
@@ -162,3 +162,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
