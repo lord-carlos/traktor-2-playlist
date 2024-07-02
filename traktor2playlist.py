@@ -69,7 +69,7 @@ def parse_collection_nml(file_path):
 
     return playlists
 
-def write_playlist_files(playlists, output_dir, root_path, path_prefix):
+def write_playlist_files(playlists, output_dir, root_path, path_prefix, custom_separator=None):
     for playlist in playlists:
         if playlist.entries:
             # if playlist.name is '_LOOPS' or '_RECORDINGS' skip it
@@ -78,12 +78,14 @@ def write_playlist_files(playlists, output_dir, root_path, path_prefix):
 
             playlist_file_path = os.path.join(output_dir, f"{playlist.name}.m3u")
             with open(playlist_file_path, "w", encoding='utf-8') as playlist_file:
-                    # Write playlist entries to the M3U file
+                # Write playlist entries to the M3U file
                 playlist_file.write("#EXTM3U\n")
 
-                    # Replace ':' with '\\' in the file paths for Windows compatibility
-                entries = [entry.replace('/:', os.sep) for entry in playlist.entries]
-                    # Remove the root path of every entry if root_path is provided
+                # Replace ':' with the custom separator or default OS separator
+                separator = custom_separator if custom_separator is not None else os.sep
+                entries = [entry.replace('/:', separator) for entry in playlist.entries]
+                
+                # Remove the root path of every entry if root_path is provided
                 if root_path:
                     entries = [entry.replace(root_path, '') for entry in entries]
 
@@ -109,11 +111,13 @@ def main():
     parser.add_argument('-r', '--root_path', type=str, default='', help='Path to be stripped from each entry')
     parser.add_argument('-p', '--path_prefix', type=str, default='', help='Path added in the beginning of the path. To be used with -r')
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
-    parser.add_argument('-s', '--stats', action='store_true', help='Enable statistics mode')
+    parser.add_argument('--stats', action='store_true', help='Enable statistics mode')
+    parser.add_argument('-s', '--separator', type=str, help='Custom separator to use instead of the default OS separator')
 
     args = parser.parse_args()
   
     collection_nml_path = ''
+    global DEBUG, STATISTIC
     DEBUG = args.debug
     STATISTIC = args.stats
     
@@ -142,6 +146,7 @@ def main():
     output_dir = args.output_dir
     root_path = args.root_path
     path_prefix = args.path_prefix
+    custom_separator = args.separator
 
     playlists = parse_collection_nml(collection_nml_path)
 
@@ -154,7 +159,7 @@ def main():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        write_playlist_files(playlists, output_dir, root_path, path_prefix)
+        write_playlist_files(playlists, output_dir, root_path, path_prefix, custom_separator)
 
         # Overall statistic
         if STATISTIC:
@@ -162,4 +167,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

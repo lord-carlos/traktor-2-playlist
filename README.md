@@ -36,4 +36,6 @@ That will write all the playlist into the `MyPlaylits` folder and each line star
 
 - `-d` or `--debug`: Enables debug mode.
 
-- `-s` or `--stats`: Enables statistics mode.
+- `--stats`: Enables statistics mode.
+
+- `-s` or `--seprator`: instead of OS separator it will use one of your choice
