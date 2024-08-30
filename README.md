@@ -39,3 +39,5 @@ That will write all the playlist into the `MyPlaylits` folder and each line star
 - `--stats`: Enables statistics mode.
 
 - `-s` or `--seprator`: instead of OS separator it will use one of your choice
+
+- `--fullname`: Includes the folder name as part of the playlist name

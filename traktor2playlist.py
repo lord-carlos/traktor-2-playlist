@@ -3,12 +3,13 @@ import xml.etree.ElementTree as ET
 import re
 import file_statistics
 import argparse
+import sys
 
 DEBUG = False
 STATISTIC = False
 
 class Playlist:
-    def __init__(self, name, entries):
+    def __init__(self, name, entries, folder_name=""):
         self.name = name
         self.entries = entries
 
@@ -34,7 +35,7 @@ def find_latest_traktor_version():
     latest_version = max(valid_versions, key=lambda v: tuple(map(int, v.split('.'))))
     return os.path.join(documents_path, f"Traktor {latest_version}")
 
-def parse_collection_nml(file_path):
+def parse_collection_nml(file_path, args):
     """
     Parses the collection.nml file and extracts playlists and their entries.
 
@@ -51,16 +52,29 @@ def parse_collection_nml(file_path):
         tree = ET.parse(file_path)
         root = tree.getroot()
 
-        for node in root.findall(".//NODE[@TYPE='PLAYLIST']"):
-            playlist_name = node.get("NAME")
-            entries = []
+        # Iterate over folder nodes first
+        for folder_node in root.findall(".//NODE[@TYPE='FOLDER']"):
+            folder_name = folder_node.get("NAME")
 
-            for entry_node in node.findall(".//ENTRY/PRIMARYKEY"):
-                track_key = entry_node.get("KEY")
-                entries.append(track_key)
+            # Check if folder name starts with '$ROOT_' and skip it
+            if folder_name.startswith("$ROOT"):
+                continue
 
-            if entries:
-                playlists.append(Playlist(playlist_name, entries))
+            # Now find playlist nodes within each folder
+            for node in folder_node.findall(".//NODE[@TYPE='PLAYLIST']"):
+                playlist_name = node.get("NAME")
+                full_playlist_name = f"{folder_name} {playlist_name}"  # Prepend folder name
+                entries = []
+
+                for entry_node in node.findall(".//ENTRY/PRIMARYKEY"):
+                    track_key = entry_node.get("KEY")
+                    entries.append(track_key)
+
+                if entries:
+                    if args.fullname:
+                        playlists.append(Playlist(full_playlist_name, entries))
+                    else:
+                        playlists.append(Playlist(playlist_name, entries))
 
     except ET.ParseError as e:
         if DEBUG:
@@ -85,6 +99,10 @@ def write_playlist_files(playlists, output_dir, root_path, path_prefix, custom_s
                 separator = custom_separator if custom_separator is not None else os.sep
                 entries = [entry.replace('/:', separator) for entry in playlist.entries]
                 
+                # Modify the entries to start with '/Users/' and not 'DiskName' under MacOS
+                if sys.platform == "darwin":
+                    entries = [f'/Users/{entry.split("/Users/", 1)[-1]}' if '/Users/' in entry else entry for entry in entries]
+
                 # Remove the root path of every entry if root_path is provided
                 if root_path:
                     entries = [entry.replace(root_path, '') for entry in entries]
@@ -113,6 +131,7 @@ def main():
     parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('--stats', action='store_true', help='Enable statistics mode')
     parser.add_argument('-s', '--separator', type=str, help='Custom separator to use instead of the default OS separator')
+    parser.add_argument('--fullname', action='store_true', help='Use full playlist name')
 
     args = parser.parse_args()
   
@@ -148,7 +167,7 @@ def main():
     path_prefix = args.path_prefix
     custom_separator = args.separator
 
-    playlists = parse_collection_nml(collection_nml_path)
+    playlists = parse_collection_nml(collection_nml_path, args)
 
     if playlists:
         if DEBUG:
