@@ -1,15 +1,26 @@
 import requests
 import os
-
-# Configuration
-JELLYFIN_SERVER_URL = "http://your-jellyfin-server-url"
-API_KEY = "your-api-key"
-USER_ID = "your-user-id"
+import configparser
 
 # Path manipulation variables
 REMOVE_PATH_PREFIX = "/mnt/music/"
 ADD_PATH_PREFIX = os.path.expanduser("~/Music/")
 PLAYLIST_NAME = os.path.expanduser("~/Music/playlists/Favorites.m3u")
+
+def read_config():
+    """
+    Read the configuration file to get the API key and user ID.
+    """
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    global API_KEY, USER_ID, JELLYFIN_SERVER_URL
+    JELLYFIN_SERVER_URL = config['jellyfin']['server_url']
+    API_KEY = config['jellyfin']['api_key']
+    USER_ID = config['jellyfin']['user_id']
+
+    if not all([JELLYFIN_SERVER_URL, API_KEY, USER_ID]):
+        raise ValueError("One or more configuration values are not set.")
 
 def get_favorites():
     """
@@ -70,4 +81,5 @@ def get_favorites():
 
 # Run the function
 if __name__ == "__main__":
+    read_config()
     get_favorites()
