@@ -1,43 +1,144 @@
-# traktor-2-playlist
-Exports playlist from traktor collection.nml to .m3u playlist files.
-It can make the path to relative.
+# Traktor Playlist Manager
 
-Currently windows only. (Might actually work on mac, please test)
+A set of Python scripts to interact with Native Instruments Traktor Pro's `collection.nml` file and Jellyfin server. The main functionalities include exporting Traktor playlists to `.m3u` files, importing `.m3u` playlists into Traktor, and fetching playlists from a Jellyfin server.
 
-Work in progress
+## Features
 
-![shitty logo](image.png)
+- Export Traktor playlists to `.m3u` files with path manipulation options
+- Import `.m3u` playlists into Traktor
+- Fetch favorite tracks from a Jellyfin server and create an `.m3u` playlist
+- Unified command-line interface for all operations
+- Configuration file support for persistent settings
+- Auto-detection of Traktor's `collection.nml` file
+- Configurable logging with multiple log levels
 
-## How to use
+## Installation
 
-If you use it without any arguments, it will try to find the latest `collection.nml` and dump every playlist into `~/Music`
+1. Clone or download this repository
+2. Ensure you have Python 3.6 or higher installed
+3. Install required dependencies:
+   ```bash
+   pip install requests
+   ```
 
-You can use it in a way to make the path relative. For example if all you files are in `C:\Users\hans\Music` but you want to share the music folder on another device. You can use the `--root_path` option to remove the `C:\Users...` part. If you at the same time save the playlists to the music folder they should still work.
+## Configuration
 
-But what if you want all the playlist into a `Playlists` folder in the music folder? Then you need to add the prefix `..\` with `-p` parameter.
+Create a `config.ini` file in the project directory (you can use `config.example.ini` as a template):
 
-All of that could look something like this:
+```ini
+[logging]
+# Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+level = INFO
 
-```bash
-python ./traktor2playlist -o "C:\MyMusic\MyPlaylists" -r "C:\MyMusic\" -p "..\"
+[jellyfin]
+server_url = http://your-jellyfin-server-url
+api_key = your-api-key
+user_id = your-user-id
+remove_path_prefix = /mnt/music/
+add_path_prefix = ~/Music/
+playlist_name = ~/Music/playlists/Favorites.m3u
+
+[traktor]
+collection_path = /path/to/your/collection.nml
+output_dir = ~/Music
 ```
 
-That will write all the playlist into the `MyPlaylits` folder and each line starts with `..\` without the `C:\..`
+All configuration options can be overridden with command-line arguments.
+
+## Usage
+
+The script is invoked through `main.py` with different subcommands for each action:
+
+```bash
+python main.py [OPTIONS] ACTION [ACTION_OPTIONS]
+```
+
+### Export Traktor Playlists
+
+Export all playlists from Traktor's `collection.nml` to individual `.m3u` files:
+
+```bash
+# Auto-detect collection.nml and export to ~/Music
+python main.py export
+
+# Specify collection.nml path and output directory
+python main.py export -c /path/to/collection.nml -o /path/to/output/dir
+
+# Make paths relative and add a prefix
+python main.py export -r "C:\\MyMusic\\" -p "..\\"
+
+# Enable debug and statistics modes
+python main.py export -d --stats
+
+# Use a custom separator (e.g., for cross-platform compatibility)
+python main.py export -s "/"
+
+# Include folder names in exported playlist names
+python main.py export --fullname
+```
+
+### Import M3U Playlist to Traktor
+
+Import tracks from an `.m3u` playlist file into Traktor's `collection.nml`:
+
+```bash
+# Import playlist with a specific name
+python main.py import -m /path/to/playlist.m3u -n "My New Playlist"
+
+# Auto-detect collection.nml
+python main.py import -m /path/to/playlist.m3u
+```
+
+### Fetch Favorites from Jellyfin
+
+Connect to a Jellyfin server and create an `.m3u` playlist from favorite tracks:
+
+```bash
+# Use settings from config.ini
+python main.py jellyfin
+
+# Override specific settings
+python main.py jellyfin --remove_path_prefix "/mnt/media/" --add_path_prefix "~/Media/"
+```
 
 ## Available Options
 
-- `-c` or `--collection`: Specifies the path to the `collection.nml` file. If none is given, the script will try to find it automatically.
+### Global Options
+- `--config`: Path to configuration file (default: config.ini)
+- `-d`, `--debug`: Enable debug mode (overrides config file setting)
 
-- `-o` or `--output_dir`: Specifies the directory where the playlist files will be written. By default, this is the "Music" folder in the user's home directory.
+### Export Options
+- `-c`, `--collection`: Path to `collection.nml`. If not provided, the script attempts to find it automatically.
+- `-o`, `--output_dir`: Directory to write playlist files. Default is `~/Music`.
+- `-r`, `--root_path`: Path to strip from each entry.
+- `-p`, `--path_prefix`: Path to add at the beginning of each entry.
+- `--stats`: Enable statistics mode.
+- `-s`, `--separator`: Custom separator to use instead of the default OS separator.
+- `--fullname`: Use full playlist name (including folder).
 
-- `-r` or `--root_path`: Specifies the path to be stripped from each entry in the playlist files. (Optional)
+### Import Options
+- `-m`, `--m3u_playlist`: Path to the .m3u file to import (required)
+- `-c`, `--collection`: Path to `collection.nml`. If not provided, the script attempts to find it automatically.
+- `-n`, `--playlist_name`: Base name for the new playlist in Traktor (default: ImportedPlaylist)
 
-- `-p` or `--path_prefix`: Specifies the path to be added at the beginning of each entry in the playlist files. This is to be used with `-r`. For example `-r "..\"`
+### Jellyfin Options
+- `--remove_path_prefix`: Prefix to remove from Jellyfin file paths
+- `--add_path_prefix`: Prefix to add to local file paths
+- `--playlist_name`: Path to save the .m3u playlist file
 
-- `-d` or `--debug`: Enables debug mode.
+## Logging
 
-- `--stats`: Enables statistics mode.
+The application supports configurable logging with the following features:
 
-- `-s` or `--seprator`: instead of OS separator it will use one of your choice
+1. **Log Levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL
+2. **Configuration**: Set log level in `config.ini`
+3. **Override**: Use `-d` or `--debug` flag to enable debug logging regardless of config
+4. **Per-Module**: Each module has its own logger with hierarchical naming
 
-- `--fullname`: Includes the folder name as part of the playlist name
+Example `config.ini` logging section:
+```ini
+[logging]
+level = DEBUG
+```
+
+This will show detailed debug information from all modules. For production use, you might want to set the level to `INFO` or `WARNING`.

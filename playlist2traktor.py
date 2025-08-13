@@ -3,30 +3,11 @@ import xml.etree.ElementTree as ET
 import uuid
 import random
 import string
+import logging
+from traktor_utils import convert_path_to_traktor_format
 
-# Configuration
-M3U_PLAYLIST_PATH = "example/playlist.m3u"
-COLLECTION_NML_PATH = "example/simple-all.nml"
-NEW_PLAYLIST_NAME = "#horsetest"
-
-# Generate 5 random letters
-random_letters = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=5))
-NEW_PLAYLIST_NAME += "-" + random_letters
-
-def convert_path_to_traktor_format(original_path):
-    """
-    Converts a file path to the Traktor format with forward slashes and a colon after each slash.
-
-    :param original_path: The original file path as a string.
-    :return: The converted file path as a string.
-    """
-    # Replace backslashes with forward slashes
-    path_with_slashes = original_path.replace("\\", "/")
-    # Add a colon after each slash
-    traktor_path = path_with_slashes.replace("/", "/:")
-    # Ensure the colon is only added after the first slash
-    return traktor_path
-
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 
 def read_m3u_playlist(file_path):
@@ -40,10 +21,12 @@ def read_m3u_playlist(file_path):
                 line = line.strip()
                 if line and not line.startswith("#"):  # Ignore comments and empty lines
                     tracks.append(line)
+        logger.info(f"Successfully read {len(tracks)} tracks from {file_path}")
         return tracks
     except Exception as e:
-        print(f"Error reading .m3u playlist: {e}")
+        logger.error(f"Error reading .m3u playlist: {e}")
         return []
+
 
 def modify_collection_nml(collection_path, playlist_name, tracks):
     """
@@ -57,7 +40,7 @@ def modify_collection_nml(collection_path, playlist_name, tracks):
         # Locate the <SUBNODES> element
         subnodes = root.find(".//SUBNODES")
         if subnodes is None:
-            print("No <SUBNODES> element found.")
+            logger.error("No <SUBNODES> element found.")
             return
         
         # Create the new <NODE TYPE="PLAYLIST">
@@ -68,7 +51,7 @@ def modify_collection_nml(collection_path, playlist_name, tracks):
 
         # Create the <PLAYLIST> child
         playlist_element = ET.SubElement(node_element, "PLAYLIST", {
-            "ENTRIES": str(tracks.__len__()),
+            "ENTRIES": str(len(tracks)),
             "TYPE": "LIST",
             "UUID": str(uuid.uuid4()).replace("-", "")
         })
@@ -86,19 +69,35 @@ def modify_collection_nml(collection_path, playlist_name, tracks):
 
         # Save the modified XML back to the file
         tree.write(collection_path, encoding="utf-8", xml_declaration=True)
-        print(f"Playlist '{playlist_name}' added successfully.")
+        logger.info(f"Playlist '{playlist_name}' added successfully with {len(tracks)} tracks.")
     except Exception as e:
-        print(f"Error modifying collection.nml: {e}")
+        logger.error(f"Error modifying collection.nml: {e}")
 
-def main():
+
+def import_playlist(m3u_playlist_path, collection_nml_path, new_playlist_name_base):
+    """
+    Main function to import an .m3u playlist into Traktor's collection.nml.
+    
+    Args:
+        m3u_playlist_path (str): Path to the .m3u file to import.
+        collection_nml_path (str): Path to the collection.nml file to modify.
+        new_playlist_name_base (str): Base name for the new playlist.
+    """
+    logger.info(f"Starting import of playlist from {m3u_playlist_path}")
+    
+    # Generate 5 random letters for a unique playlist name
+    random_letters = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=5))
+    new_playlist_name = f"{new_playlist_name_base}-{random_letters}"
+    logger.debug(f"Generated playlist name: {new_playlist_name}")
+
     # Step 1: Read the .m3u playlist
-    tracks = read_m3u_playlist(M3U_PLAYLIST_PATH)
+    tracks = read_m3u_playlist(m3u_playlist_path)
     if not tracks:
-        print("No tracks found in the .m3u playlist.")
+        logger.warning("No tracks found in the .m3u playlist.")
         return
 
     # Step 2: Modify the collection.nml file
-    modify_collection_nml(COLLECTION_NML_PATH, NEW_PLAYLIST_NAME, tracks)
-
-if __name__ == "__main__":
-    main()
+    logger.info(f"Adding {len(tracks)} tracks to playlist '{new_playlist_name}' in {collection_nml_path}")
+    modify_collection_nml(collection_nml_path, new_playlist_name, tracks)
+    
+    logger.info("Playlist import completed successfully.")
