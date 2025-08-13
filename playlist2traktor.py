@@ -6,8 +6,8 @@ import string
 
 # Configuration
 M3U_PLAYLIST_PATH = "example/playlist.m3u"
-COLLECTION_NML_PATH = "example/collection.nml"
-NEW_PLAYLIST_NAME = "#My New Playlist"
+COLLECTION_NML_PATH = "example/simple-all.nml"
+NEW_PLAYLIST_NAME = "#horsetest"
 
 # Generate 5 random letters
 random_letters = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase, k=5))
@@ -77,7 +77,7 @@ def modify_collection_nml(collection_path, playlist_name, tracks):
         for track_path in tracks:
             entry_element = ET.SubElement(playlist_element, "ENTRY")
             ET.SubElement(entry_element, "PRIMARYKEY", {
-                "TYPE": "FILE",
+                "TYPE": "TRACK",
                 "KEY": convert_path_to_traktor_format(track_path)
             })
         
